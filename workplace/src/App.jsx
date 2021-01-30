@@ -10,34 +10,56 @@ const App = () => {
   const [dataset, setDataset] = useState(defaultDataset);
   const [open, setOpen] = useState(false);
 
-  const displayNextQuestion = (nextQuestionId) => {
-    chats.push({ text: dataset[nextQuestionId].question, type: "question" });
-    setChats(chats);
+  const displayNextQuestion = (nextQuestionId, nextDataset) => {
+    addChats({ text: nextDataset.question, type: "question" });
+    setAnswers(nextDataset.answers);
     setCurrentId(nextQuestionId);
-    setAnswers(dataset[nextQuestionId].answers);
   };
 
   const selectAnswer = (selectedAnswer, nextQuestionId) => {
     switch (true) {
       case nextQuestionId === "init":
-        displayNextQuestion(nextQuestionId);
+        setTimeout(
+          () => displayNextQuestion(nextQuestionId, dataset[nextQuestionId]),
+          500
+        );
+        break;
+      case /^http/.test(nextQuestionId):
+        const a = document.createElement("a");
+        a.href = nextQuestionId;
+        a.target = "_blank";
+        a.click();
         break;
       default:
-        const chat = {
+        addChats({
           text: selectedAnswer,
           type: "answer",
-        };
-        chats.push(chat);
-        setChats(chats);
-        displayNextQuestion(nextQuestionId);
+        });
+        setTimeout(
+          () => displayNextQuestion(nextQuestionId, dataset[nextQuestionId]),
+          500
+        );
         break;
     }
+  };
+
+  const addChats = (chat) => {
+    setChats((prevChats) => {
+      return [...prevChats, chat];
+    });
   };
 
   useEffect(() => {
     const initAnswer = "";
     selectAnswer(initAnswer, currentId);
   }, []);
+
+  useEffect(() => {
+    const scrollArea = document.getElementById("scroll-area");
+    if (scrollArea) {
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+  });
 
   return (
     <section className="c-section">
